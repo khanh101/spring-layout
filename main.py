@@ -8,10 +8,8 @@ from sklearn.decomposition import PCA
 
 from animation import draw
 
-def spring_layout(adj: np.ndarray, d: int=2, coord: Optional[np.ndarray] = None) -> Iterator[np.ndarray]:
-    n = adj.shape[0]
-    if coord is None:
-        coord = np.random.normal(loc=0, scale=0.01, size=(n, d))
+def spring_layout(adj: np.ndarray, coord: np.ndarray) -> Iterator[np.ndarray]:
+    n, d = coord.shape
     def _optimizer(adj: np.ndarray, d: int, coord: np.ndarray, child_conn: mp.Pipe):
         x0 = coord.flatten()
         def objective(x: np.ndarray) -> float:
@@ -50,8 +48,8 @@ def spring_layout(adj: np.ndarray, d: int=2, coord: Optional[np.ndarray] = None)
 
 np.random.seed(1234)
 
-height = 5
-width = 5
+height = 4
+width = 4
 n = height * width
 
 hw2i = np.arange(0, n).reshape((height, width))
@@ -74,17 +72,28 @@ for h0 in range(height):
                     i1 = hw2i[h1, w1]
                     adj[i0, i1] = 1
 
-sl = spring_layout(adj)
 edge_list = []
 for u in range(n):
     for v in range(u + 1, n):
         if adj[u, v] > 0:
             edge_list.append([u, v])
 def helper():
-    for coord in sl:
-        minxy = coord.min(initial=+np.inf)-1
-        maxxy = coord.max(initial=-np.inf)+1
-        yield coord, edge_list, ((minxy, maxxy), (minxy, maxxy))
+    coord_list = []
+    d = 3
+    while d >= 2:
+        print(d)
+        if len(coord_list) == 0:
+            coord = np.random.normal(loc=0, scale=0.01, size=(n, d))
+        else:
+            coord = coord_list[-1][:, 0:d]
+        sl = spring_layout(adj, coord=coord)
+        for coord in sl:
+            coord_list.append(coord)
+            coord = coord[:, 0:2]
+            minxy = coord.min(initial=+np.inf)-1
+            maxxy = coord.max(initial=-np.inf)+1
+            yield coord, edge_list, ((minxy, maxxy), (minxy, maxxy))
+        d -= 1
 
 
 draw(helper(), s=20)
