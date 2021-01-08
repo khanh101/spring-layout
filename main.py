@@ -91,7 +91,7 @@ for u in range(n):
 
 def helper():
     coord_list = []
-    d = 3
+    d = 4
     print("Running...")
     while d >= 2:
         print(f"dim {d}")
@@ -115,4 +115,4 @@ def helper():
         yield coord, edge_list, ((minxy, maxxy), (minxy, maxxy))
 
 
-draw(helper(), s=20, interval=200)
+draw(helper(), s=20, interval=0)
