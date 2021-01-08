@@ -3,53 +3,28 @@ import numpy as np
 import scipy as sp
 import scipy.optimize
 import multiprocessing as mp
+
+from sklearn.decomposition import PCA
+
 from animation import draw
 
-class SpringLayout:
-    def __init__(self, adj: np.ndarray, d: int=2, coord: Optional[np.ndarray] = None):
-        self.adj = 0.5 * (adj + adj.T)
-        self.n = self.adj.shape[0]
-        self.d = d
-        for u in range(self.n):
-            self.adj[u, u] = 0
-        self.edge_list = []
-        for u in range(self.n):
-            for v in range(u+1, self.n):
-                if adj[u, v] > 0:
-                    self.edge_list.append([u, v])
-        if coord is None:
-            coord = np.random.normal(loc=0, scale=0.01, size=(self.n, self.d))
-        self.coord = coord
-
-    def data_iter(self) -> Iterator[tuple[
-        np.ndarray,
-        list[list[int]],
-        tuple[tuple[int, int], tuple[int, int]],
-    ]]:
-        parent_conn, child_conn = mp.Pipe()
-        process = mp.Process(target=SpringLayout._optimizer, args=(self, child_conn))
-        process.start()
-        while True:
-            coord = parent_conn.recv()
-            if coord is StopIteration:
-                break
-            yield coord, self.edge_list, ((coord[:, 0].min()-1, coord[:, 0].max()+1), (coord[:, 1].min()-1, coord[:, 1].max()+1))
-        process.join()
-
-    def _optimizer(self, child_conn: mp.Pipe):
-        x0 = self.coord.flatten()
+def spring_layout(adj: np.ndarray, d: int=2, coord: Optional[np.ndarray] = None) -> Iterator[np.ndarray]:
+    n = adj.shape[0]
+    if coord is None:
+        coord = np.random.normal(loc=0, scale=0.01, size=(n, d))
+    def _optimizer(adj: np.ndarray, d: int, coord: np.ndarray, child_conn: mp.Pipe):
+        x0 = coord.flatten()
         def objective(x: np.ndarray) -> float:
-            coord = x.reshape((self.n, self.d))
+            coord = x.reshape((n, d))
             obj = 0
-            for u in range(self.n):
-                for v in range(u + 1, self.n):
+            for u in range(n):
+                for v in range(u + 1, n):
                     dist2 = ((coord[u] - coord[v]) ** 2).sum()
-                    obj += self.adj[u, v] * dist2 + dist2 ** (-0.5)
+                    obj += adj[u, v] * dist2 + dist2 ** (-0.5)
             return obj
 
         def callback(x: np.ndarray):
-            print(objective(x))
-            coord = x.reshape((self.n, self.d))
+            coord = x.reshape((n, d))
             child_conn.send(coord)
 
         result = sp.optimize.minimize(
@@ -62,6 +37,16 @@ class SpringLayout:
             callback(result.x)
         print("done", flush=True)
         child_conn.send(StopIteration)
+
+    parent_conn, child_conn = mp.Pipe()
+    process = mp.Process(target=_optimizer, args=(adj, d, coord, child_conn))
+    process.start()
+    while True:
+        coord = parent_conn.recv()
+        if coord is StopIteration:
+            break
+        yield coord
+    process.join()
 
 np.random.seed(1234)
 
@@ -89,4 +74,17 @@ for h0 in range(height):
                     i1 = hw2i[h1, w1]
                     adj[i0, i1] = 1
 
-draw(SpringLayout(adj).data_iter(), s=20)
+sl = spring_layout(adj)
+edge_list = []
+for u in range(n):
+    for v in range(u + 1, n):
+        if adj[u, v] > 0:
+            edge_list.append([u, v])
+def helper():
+    for coord in sl:
+        minxy = coord.min(initial=+np.inf)-1
+        maxxy = coord.max(initial=-np.inf)+1
+        yield coord, edge_list, ((minxy, maxxy), (minxy, maxxy))
+
+
+draw(helper(), s=20)
