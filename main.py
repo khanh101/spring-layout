@@ -80,13 +80,8 @@ def grid_network(shape: list[int]) -> np.ndarray:
     return adj
 
 
-'''
-n = 20
-adj = np.random.random((n, n))
-adj = 0.5 * (adj + adj.T)
-adj = adj < 0.4
-'''
-adj = grid_network([4, 4, 4])
+# adj = grid_network([4, 4, 4])
+adj = grid_network([2, 2, 2])
 n = adj.shape[0]
 edge_list = []
 for u in range(n):
@@ -97,7 +92,7 @@ for u in range(n):
 
 def helper():
     coord_list = []
-    d = 3
+    d = 4
     while d >= 2:
         print(d)
         if len(coord_list) == 0:
