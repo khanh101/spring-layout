@@ -43,8 +43,8 @@ class SpringLayout:
             obj = 0
             for u in range(self.n):
                 for v in range(u + 1, self.n):
-                    dist = np.sqrt(((coord[u] - coord[v]) ** 2).sum())
-                    obj += self.adj[u, v] * dist ** 2 + dist ** (-1)
+                    dist2 = ((coord[u] - coord[v]) ** 2).sum()
+                    obj += self.adj[u, v] * dist2 + dist2 ** (-0.5)
             return obj
 
         def callback(x: np.ndarray):
