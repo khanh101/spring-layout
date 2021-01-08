@@ -36,7 +36,6 @@ def spring_layout(adj: np.ndarray, coord: np.ndarray) -> Iterator[np.ndarray]:
         )
         if result.success:
             callback(result.x)
-        print("done", flush=True)
         child_conn.send(StopIteration)
 
     parent_conn, child_conn = mp.Pipe()
@@ -93,8 +92,9 @@ for u in range(n):
 def helper():
     coord_list = []
     d = 4
+    print("Running...")
     while d >= 2:
-        print(d)
+        print(f"dim {d}")
         if len(coord_list) == 0:
             coord = np.random.normal(loc=0, scale=0.01, size=(n, d))
         else:
@@ -107,13 +107,12 @@ def helper():
             maxxy = coord.max(initial=-np.inf) + 1
             yield coord, edge_list, ((minxy, maxxy), (minxy, maxxy))
         d -= 1
-
-    while True:
-        for coord in coord_list:
-            coord = coord[:, 0:2]
-            minxy = coord.min(initial=+np.inf) - 1
-            maxxy = coord.max(initial=-np.inf) + 1
-            yield coord, edge_list, ((minxy, maxxy), (minxy, maxxy))
+    input("Enter to continue...")
+    for coord in coord_list:
+        coord = coord[:, 0:2]
+        minxy = coord.min(initial=+np.inf) - 1
+        maxxy = coord.max(initial=-np.inf) + 1
+        yield coord, edge_list, ((minxy, maxxy), (minxy, maxxy))
 
 
 draw(helper(), s=20)
