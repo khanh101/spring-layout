@@ -1,18 +1,20 @@
 import itertools
-from typing import Callable, Any, Iterator, Union, Optional
+import multiprocessing as mp
+from typing import Iterator
+
 import numpy as np
 import scipy as sp
 import scipy.optimize
-import multiprocessing as mp
-
-from sklearn.decomposition import PCA
 
 from animation import draw
 
+
 def spring_layout(adj: np.ndarray, coord: np.ndarray) -> Iterator[np.ndarray]:
     n, d = coord.shape
+
     def _optimizer(adj: np.ndarray, d: int, coord: np.ndarray, child_conn: mp.Pipe):
         x0 = coord.flatten()
+
         def objective(x: np.ndarray) -> float:
             coord = x.reshape((n, d))
             obj = 0
@@ -47,7 +49,9 @@ def spring_layout(adj: np.ndarray, coord: np.ndarray) -> Iterator[np.ndarray]:
         yield coord
     process.join()
 
+
 np.random.seed(1234)
+
 
 def grid_network(shape: list[int]) -> np.ndarray:
     coord_list = [list(coord) for coord in itertools.product(*[range(s) for s in shape])]
@@ -74,19 +78,23 @@ def grid_network(shape: list[int]) -> np.ndarray:
                     i1 = c2i[tuple(new_c)]
                     adj[i0, i1] = 1
     return adj
+
+
 '''
 n = 20
 adj = np.random.random((n, n))
 adj = 0.5 * (adj + adj.T)
 adj = adj < 0.4
 '''
-adj = grid_network([4,4,4])
+adj = grid_network([4, 4, 4])
 n = adj.shape[0]
 edge_list = []
 for u in range(n):
     for v in range(u + 1, n):
         if adj[u, v] > 0:
             edge_list.append([u, v])
+
+
 def helper():
     coord_list = []
     d = 3
@@ -100,16 +108,17 @@ def helper():
         for coord in sl:
             coord_list.append(coord)
             coord = coord[:, 0:2]
-            minxy = coord.min(initial=+np.inf)-1
-            maxxy = coord.max(initial=-np.inf)+1
+            minxy = coord.min(initial=+np.inf) - 1
+            maxxy = coord.max(initial=-np.inf) + 1
             yield coord, edge_list, ((minxy, maxxy), (minxy, maxxy))
         d -= 1
 
     while True:
         for coord in coord_list:
             coord = coord[:, 0:2]
-            minxy = coord.min(initial=+np.inf)-1
-            maxxy = coord.max(initial=-np.inf)+1
+            minxy = coord.min(initial=+np.inf) - 1
+            maxxy = coord.max(initial=-np.inf) + 1
             yield coord, edge_list, ((minxy, maxxy), (minxy, maxxy))
+
 
 draw(helper(), s=20)

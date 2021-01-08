@@ -12,7 +12,7 @@ def draw(data_iter: Iterator[tuple[
     np.ndarray,
     list[list[int]],
     tuple[tuple[int, int], tuple[int, int]],
-]], s: float=10, lw: float=1, c: str="C0"):
+]], s: float = 10, lw: float = 1, c: str = "C0"):
     '''
     data_iter: an iterator of data
     example:
@@ -65,6 +65,7 @@ def draw(data_iter: Iterator[tuple[
     )
     plt.show()
 
+
 if __name__ == "__main__":
     def data_iter() -> Iterator[tuple[
         np.ndarray,
@@ -77,5 +78,6 @@ if __name__ == "__main__":
         while True:
             yield point, path, xylim
             point += np.random.normal(loc=0, scale=0.01, size=point.shape)
+
 
     draw(data_iter())
