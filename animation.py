@@ -12,7 +12,7 @@ def draw(data_iter: Iterator[tuple[
     np.ndarray,
     list[list[int]],
     tuple[tuple[int, int], tuple[int, int]],
-]], s: float = 10, lw: float = 1, c: str = "C0"):
+]], s: float = 10, lw: float = 1, c: str = "C0", interval: int=0):
     '''
     data_iter: an iterator of data
     example:
@@ -60,7 +60,7 @@ def draw(data_iter: Iterator[tuple[
         func=draw,
         frames=data_iter,
         blit=False,
-        interval=0,
+        interval=interval,
         repeat=False,
     )
     plt.show()
