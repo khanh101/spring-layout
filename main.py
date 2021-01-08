@@ -1,3 +1,4 @@
+import itertools
 from typing import Callable, Any, Iterator, Union, Optional
 import numpy as np
 import scipy as sp
@@ -48,30 +49,39 @@ def spring_layout(adj: np.ndarray, coord: np.ndarray) -> Iterator[np.ndarray]:
 
 np.random.seed(1234)
 
-height = 4
-width = 4
-n = height * width
+def grid_network(shape: list[int]) -> np.ndarray:
+    coord_list = [list(coord) for coord in itertools.product(*[range(s) for s in shape])]
+    n = len(coord_list)
 
-hw2i = np.arange(0, n).reshape((height, width))
+    c2i = {}
+    for i, c in enumerate(coord_list):
+        c2i[tuple(c)] = i
 
-def within_range(h: int, w: int) -> bool:
-    if h < 0 or h >= height:
-        return False
-    if w < 0 or w >= width:
-        return False
-    return True
+    def within_range(coord: list[int]) -> bool:
+        for i, c in enumerate(coord):
+            if c < 0 or c >= shape[i]:
+                return False
+        return True
 
-adj = np.zeros(shape=(n, n), dtype=float)
-for h0 in range(height):
-    for w0 in range(width):
-        for dh, dw in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
-                h1 = h0+dh
-                w1 = w0+dw
-                if within_range(h1, w1):
-                    i0 = hw2i[h0, w0]
-                    i1 = hw2i[h1, w1]
+    adj = np.zeros(shape=(n, n), dtype=float)
+    for c in coord_list:
+        for i in range(len(shape)):
+            for dc in [-1, +1]:
+                new_c = [*c]
+                new_c[i] += dc
+                if within_range(new_c):
+                    i0 = c2i[tuple(c)]
+                    i1 = c2i[tuple(new_c)]
                     adj[i0, i1] = 1
-
+    return adj
+'''
+n = 20
+adj = np.random.random((n, n))
+adj = 0.5 * (adj + adj.T)
+adj = adj < 0.4
+'''
+adj = grid_network([4,4,4])
+n = adj.shape[0]
 edge_list = []
 for u in range(n):
     for v in range(u + 1, n):
@@ -95,5 +105,11 @@ def helper():
             yield coord, edge_list, ((minxy, maxxy), (minxy, maxxy))
         d -= 1
 
+    while True:
+        for coord in coord_list:
+            coord = coord[:, 0:2]
+            minxy = coord.min(initial=+np.inf)-1
+            maxxy = coord.max(initial=-np.inf)+1
+            yield coord, edge_list, ((minxy, maxxy), (minxy, maxxy))
 
 draw(helper(), s=20)

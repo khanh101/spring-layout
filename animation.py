@@ -60,7 +60,7 @@ def draw(data_iter: Iterator[tuple[
         func=draw,
         frames=data_iter,
         blit=False,
-        interval=10,
+        interval=0,
         repeat=False,
     )
     plt.show()
