@@ -79,8 +79,8 @@ def grid_network(shape: list[int]) -> np.ndarray:
     return adj
 
 
-adj = grid_network([4, 4, 4])
-# adj = grid_network([2, 2, 2])
+# adj = grid_network([4, 4, 4])
+adj = grid_network([2, 2, 2])
 n = adj.shape[0]
 edge_list = []
 for u in range(n):
@@ -89,9 +89,8 @@ for u in range(n):
             edge_list.append([u, v])
 
 
-def helper():
+def helper(d: int=3):
     coord_list = []
-    d = 4
     print("Running...")
     while d >= 2:
         print(f"dim {d}")
@@ -107,12 +106,9 @@ def helper():
             maxxy = coord.max(initial=-np.inf) + 1
             yield coord, edge_list, ((minxy, maxxy), (minxy, maxxy))
         d -= 1
-    input("Enter to continue...")
-    for coord in coord_list:
-        coord = coord[:, 0:2]
-        minxy = coord.min(initial=+np.inf) - 1
-        maxxy = coord.max(initial=-np.inf) + 1
-        yield coord, edge_list, ((minxy, maxxy), (minxy, maxxy))
+    print("done")
 
-
-draw(helper(), s=20, interval=0)
+d = 3
+draw(helper(d=d), title=f"3d grid in {d}d", s=20, interval=33)
+d = 4
+draw(helper(d=d), title=f"3d grid in {d}d", s=20, interval=33)

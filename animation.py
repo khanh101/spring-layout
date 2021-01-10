@@ -12,7 +12,7 @@ def draw(data_iter: Iterator[tuple[
     np.ndarray,
     list[list[int]],
     tuple[tuple[int, int], tuple[int, int]],
-]], s: float = 10, lw: float = 1, c: str = "C0", interval: int=0):
+]], title: str = "", s: float = 10, lw: float = 1, c: str = "C0", interval: int=0):
     '''
     data_iter: an iterator of data
     example:
@@ -33,6 +33,7 @@ def draw(data_iter: Iterator[tuple[
     fig: Figure
     ax: Axes
     fig, ax = plt.subplots()
+    fig.suptitle(title)
     ax.set_aspect("equal")
     scat: PathCollection = ax.scatter([], [], s=s, c=c)
     line_list: list[Line2D] = []
