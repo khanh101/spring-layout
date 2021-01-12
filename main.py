@@ -6,7 +6,7 @@ import numpy as np
 import scipy as sp
 import scipy.optimize
 
-from animation import draw
+import animation
 
 
 def spring_layout(adj: np.ndarray, coord: np.ndarray) -> Iterator[np.ndarray]:
@@ -82,33 +82,36 @@ def grid_network(shape: list[int]) -> np.ndarray:
 # adj = grid_network([4, 4, 4])
 adj = grid_network([2, 2, 2])
 n = adj.shape[0]
-edge_list = []
+
+
+state = animation.State()
+state.vertex_size = 5
+state.line_width = 1
+state.line = []
 for u in range(n):
     for v in range(u + 1, n):
         if adj[u, v] > 0:
-            edge_list.append([u, v])
-
-
-def helper(d: int=3):
-    coord_list = []
+            state.line.append([u, v])
+def helper(d: int=3) -> Iterator[animation.State]:
+    last_vertex = None
     print("Running...")
     while d >= 2:
         print(f"dim {d}")
-        if len(coord_list) == 0:
-            coord = np.random.normal(loc=0, scale=0.01, size=(n, d))
+        if last_vertex is None:
+            vertex = np.random.normal(loc=0, scale=0.01, size=(n, d))
         else:
-            coord = coord_list[-1][:, 0:d]
-        sl = spring_layout(adj, coord=coord)
-        for coord in sl:
-            coord_list.append(coord)
-            coord = coord[:, 0:2]
-            minxy = coord.min(initial=+np.inf) - 1
-            maxxy = coord.max(initial=-np.inf) + 1
-            yield coord, edge_list, ((minxy, maxxy), (minxy, maxxy))
+            vertex = last_vertex[:, 0:d]
+        sl = spring_layout(adj, coord=vertex)
+        for vertex in sl:
+            vertex = vertex[:, 0:2]
+            minxy = vertex.min(initial=+np.inf) - 1
+            maxxy = vertex.max(initial=-np.inf) + 1
+            state.vertex = vertex
+            state.xylim = ((minxy, maxxy), (minxy, maxxy))
+            yield state
         d -= 1
     print("done")
 
 d = 3
-draw(helper(d=d), title=f"3d grid in {d}d", s=20, interval=33)
-d = 4
-draw(helper(d=d), title=f"3d grid in {d}d", s=20, interval=33)
+state.title = f"3d grid in {d}d"
+animation.draw(helper(d))
