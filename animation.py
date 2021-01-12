@@ -34,7 +34,7 @@ class State:
         self.polygon_color = "C2"
 
 
-def draw(state_iter: Iterator[State], interval: int = 0):
+def draw(state_iter: Iterator[State], interval: int = 0, save: bool = False):
     fig: Figure
     ax: Axes
     fig, ax = plt.subplots()
@@ -68,6 +68,9 @@ def draw(state_iter: Iterator[State], interval: int = 0):
         for i, polygon_data in enumerate(state.polygon):
             polygon_list[i].set_xy(state.vertex[polygon_data])
             polygon_list[i].set_color(state.polygon_color)
+
+        if save:
+            fig.savefig(state.title + ".png")
 
     ani = animation.FuncAnimation(
         fig=fig,

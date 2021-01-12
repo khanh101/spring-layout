@@ -79,8 +79,7 @@ def grid_network(shape: list[int]) -> np.ndarray:
     return adj
 
 
-# adj = grid_network([4, 4, 4])
-adj = grid_network([2, 2, 2])
+adj = grid_network([10, 2])
 n = adj.shape[0]
 
 
@@ -92,8 +91,10 @@ for u in range(n):
     for v in range(u + 1, n):
         if adj[u, v] > 0:
             state.line.append([u, v])
+
 def helper(d: int=3) -> Iterator[animation.State]:
     last_vertex = None
+    iteration = 1
     print("Running...")
     while d >= 2:
         print(f"dim {d}")
@@ -103,6 +104,9 @@ def helper(d: int=3) -> Iterator[animation.State]:
             vertex = last_vertex[:, 0:d]
         sl = spring_layout(adj, coord=vertex)
         for vertex in sl:
+            state.title = str(iteration)
+            iteration += 1
+            last_vertex = vertex
             vertex = vertex[:, 0:2]
             minxy = vertex.min(initial=+np.inf) - 1
             maxxy = vertex.max(initial=-np.inf) + 1
@@ -112,6 +116,5 @@ def helper(d: int=3) -> Iterator[animation.State]:
         d -= 1
     print("done")
 
-d = 3
-state.title = f"3d grid in {d}d"
-animation.draw(helper(d))
+d = 2
+animation.draw(helper(d), save=True)
